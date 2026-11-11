@@ -8,7 +8,35 @@ gsap.registerPlugin(ScrollTrigger);
 const Pic=({id,alt,className='',priority=false}:{id:string|number,alt:string,className?:string,priority?:boolean})=><Image src={`/assets/${id}${typeof id==='number'?'.jpg':'.webp'}`} width={1200} height={1200} alt={alt} className={className} priority={priority}/>;
 export default function Home(){
  const root=useRef<HTMLDivElement>(null),cup=useRef<HTMLDivElement>(null),dialog=useRef<HTMLDialogElement>(null); const [active,setActive]=useState(0),[flavour,setFlavour]=useState('Chocolate'),[certificate,setCertificate]=useState(0),[menu,setMenu]=useState(false),[draft,setDraft]=useState(''); const product=products[active];
- useEffect(()=>{const mm=gsap.matchMedia();mm.add('(prefers-reduced-motion: no-preference)',()=>{const ctx=gsap.context(()=>{gsap.from('.hero-copy > *',{y:35,opacity:0,duration:1,stagger:.1,ease:'power3.out'});gsap.from('.cup-float',{scale:.85,opacity:0,rotate:-8,duration:1.6,ease:'power3.out'});gsap.to('.cup-float',{y:-14,rotate:2,duration:3,repeat:-1,yoyo:true,ease:'sine.inOut'});gsap.to('.cup-shadow',{scale:.88,opacity:.6,duration:3,repeat:-1,yoyo:true,ease:'sine.inOut'});gsap.to('.warmth',{opacity:.75,scale:1.12,duration:3,repeat:-1,yoyo:true});gsap.to('.steam path',{strokeDashoffset:-160,duration:4,repeat:-1,ease:'none',stagger:.5});gsap.utils.toArray<HTMLElement>('.chapter').forEach((el,i)=>{ScrollTrigger.create({trigger:el,start:'top 55%',end:'bottom 45%',onEnter:()=>{gsap.to('.story-image',{rotate:[-4,3,-6][i],scale:[1,1.04,1.08][i],duration:1});gsap.to('.story-layer',{opacity:0,duration:.8});gsap.to('.story-layer-'+i,{opacity:1,duration:.8})},onEnterBack:()=>{gsap.to('.story-layer',{opacity:0,duration:.8});gsap.to('.story-layer-'+i,{opacity:1,duration:.8})}});gsap.from(el.querySelectorAll('h2,p'),{y:30,opacity:.2,stagger:.1,scrollTrigger:{trigger:el,start:'top 85%',end:'top 40%',scrub:1}})});gsap.utils.toArray<HTMLElement>('.reveal').forEach(el=>gsap.from(el,{y:35,opacity:0,duration:.9,scrollTrigger:{trigger:el,start:'top 90%'}}));},root);return()=>ctx.revert()});return()=>mm.revert()},[]);
+ useEffect(()=>{const mm=gsap.matchMedia();mm.add('(prefers-reduced-motion: no-preference)',()=>{const ctx=gsap.context(()=>{gsap.from('.hero-copy > *',{y:35,opacity:0,duration:1,stagger:.1,ease:'power3.out'});gsap.from('.cup-float',{scale:.85,opacity:0,rotate:-8,duration:1.6,ease:'power3.out'});gsap.to('.cup-float',{y:-14,rotate:2,duration:3,repeat:-1,yoyo:true,ease:'sine.inOut'});gsap.to('.cup-shadow',{scale:.88,opacity:.6,duration:3,repeat:-1,yoyo:true,ease:'sine.inOut'});gsap.to('.warmth',{opacity:.75,scale:1.12,duration:3,repeat:-1,yoyo:true});gsap.to('.steam path',{strokeDashoffset:-160,duration:4,repeat:-1,ease:'none',stagger:.5});gsap.utils.toArray<HTMLElement>('.chapter').forEach((el,i)=>{gsap.from(el.querySelectorAll('h2,p'),{y:30,opacity:.2,stagger:.1,scrollTrigger:{trigger:el,start:'top 85%',end:'top 40%',scrub:1}})});gsap.utils.toArray<HTMLElement>('.reveal').forEach(el=>gsap.from(el,{y:35,opacity:0,duration:.9,scrollTrigger:{trigger:el,start:'top 90%'}}));},root);return()=>ctx.revert()});return()=>mm.revert()},[]);
+
+ // Keep desktop chapters scroll-driven; cycle the same photographs on phones.
+ useEffect(()=>{
+  const mm=gsap.matchMedia();
+  mm.add('(min-width: 701px) and (prefers-reduced-motion: no-preference)',()=>{
+   const ctx=gsap.context(()=>{
+    gsap.utils.toArray<HTMLElement>('.chapter').forEach((el,i)=>{ScrollTrigger.create({trigger:el,start:'top 55%',end:'bottom 45%',onEnter:()=>{gsap.to('.story-image',{rotate:[-4,3,-6][i],scale:[1,1.04,1.08][i],duration:1});gsap.to('.story-layer',{opacity:0,duration:.8});gsap.to('.story-layer-'+i,{opacity:1,duration:.8})},onEnterBack:()=>{gsap.to('.story-layer',{opacity:0,duration:.8});gsap.to('.story-layer-'+i,{opacity:1,duration:.8})}});});
+   },root);
+   return()=>ctx.revert();
+  });
+  mm.add('(max-width: 700px) and (prefers-reduced-motion: no-preference)',()=>{
+   const ctx=gsap.context(()=>{
+    const layers=gsap.utils.toArray<HTMLElement>('.story-layer');
+    gsap.set(layers,{opacity:0});
+    gsap.set(layers[0],{opacity:1});
+    const cycle=gsap.timeline({repeat:-1,paused:true});
+    for(let i=0;i<layers.length;i++){
+     const at=1.5+i*1.85;
+     cycle.to(layers[i],{opacity:0,duration:.35,ease:'power1.inOut'},at)
+      .to(layers[(i+1)%layers.length],{opacity:1,duration:.35,ease:'power1.inOut'},at);
+    }
+    const visibility=ScrollTrigger.create({trigger:'.story-photo-frame',start:'top bottom',end:'bottom top',onToggle:self=>cycle.paused(!self.isActive)});
+    cycle.paused(!visibility.isActive);
+   },root);
+   return()=>ctx.revert();
+  });
+  return()=>mm.revert();
+ },[]);
  useEffect(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const a=gsap.fromTo('.product-photo',{opacity:.3,scale:.94},{opacity:1,scale:1,duration:.65,ease:'power3.out'});return()=>{a.kill()}},[active]);
  useEffect(()=>{if(!menu)return;const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setMenu(false)};document.addEventListener('keydown',close);return()=>document.removeEventListener('keydown',close)},[menu]);
  function move(e:React.PointerEvent){if(e.pointerType==='touch'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const r=e.currentTarget.getBoundingClientRect();gsap.to(cup.current,{rotateY:((e.clientX-r.left)/r.width-.5)*14,rotateX:-((e.clientY-r.top)/r.height-.5)*9,duration:1.1,ease:'power3.out'})}
