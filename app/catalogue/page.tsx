@@ -1,0 +1,5 @@
+import Link from "next/link";
+import Image from 'next/image';
+import type { Metadata } from 'next';
+export const metadata:Metadata={title:'Original catalogue | CUP2EAT',description:'Explore original CUP2EAT catalogue pages, pricing references and ingredient information.'};
+export default function Catalogue(){return <main className="catalogue-page"><Link href="/" className="text-link">? Back to CUP2EAT</Link><h1>The original<br/>catalogue.</h1><p>Original supplied catalogue pages. Prices, quantities, delivery and variant suitability require confirmation before ordering.</p><p>The 150 ML regular pack is listed as 432 cups in the comparison and product post; one pricing panel also says 496. Ask for the current pack details.</p><div className="catalogue-pages">{[111,112,113,115,116,117,118,119,120].map(id=><a href={`/assets/${id}.jpg`} target="_blank" rel="noreferrer" key={id}><Image src={`/assets/${id}.jpg`} width={1179} height={1161} alt={`Original CUP2EAT catalogue page ${id}`} /><span>Open original page ?</span></a>)}</div><a className="button" href="https://wa.me/919818192575">Confirm catalogue details ↗</a></main>}

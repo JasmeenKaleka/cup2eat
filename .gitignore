@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.npm-cache/
+.shots/
+*.zip
+cup2eat/
+contact.jpg
+outputs/
+*.tsbuildinfo
